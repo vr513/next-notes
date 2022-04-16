@@ -26,7 +26,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const db = getDatabase(app);
   const [currentUser, setCurrentUser] = useState();
-  const [notes ,setNotes] = useState()
+  const [notes, setNotes] = useState(null);
   const [loading, setLoading] = useState(true);
   const value = {
     currentUser,
@@ -34,13 +34,14 @@ export function AuthProvider({ children }) {
     Login,
     LogOut,
     getNotes,
+    setNewNotes,
   };
   async function signup(email, password) {
     console.log("Inside authContext");
     let user = await createUserWithEmailAndPassword(auth, email, password);
     console.log(user);
     console.log("In setter ");
-    let targetString = user.user.uid;
+    let targetString = user.uid;
     console.log(targetString);
     set(ref(db, targetString), {
       userEmail: email,
@@ -57,10 +58,28 @@ export function AuthProvider({ children }) {
   }
   async function getNotes() {
     const dbref = ref(db);
-    const snapShot = await get(child(dbref, currentUser.user.uid + "/notes"));
+    const snapShot = await get(child(dbref, currentUser.uid + "/notes"));
     if (snapShot.exists()) {
-      return snapShot;
+      setNotes(snapShot.val());
     }
+    return notes;
+  }
+  async function setNewNotes(newNote) {
+    let response = null;
+    if (notes === null) {
+      const target = [newNote];
+      const targetString = currentUser.uid;
+      response = set(ref(db, targetString), {
+        notes: target,
+      });
+    } else {
+      const target = [...notes, newNote];
+      const targetString = currentUser.uid;
+      let response = update(ref(db, targetString), {
+        notes: target,
+      });
+    }
+    return response;
   }
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -69,13 +88,6 @@ export function AuthProvider({ children }) {
     });
     return unsubscribe;
   }, []);
-
-  useEffect(() =>{
-    return(
-      
-    )
-  },[])
-
 
   return (
     <AuthContext.Provider value={value}>

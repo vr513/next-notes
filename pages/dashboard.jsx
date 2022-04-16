@@ -1,20 +1,21 @@
 import { useAuth } from "../contexts/AuthContext";
 import withAuth from "./withAuth";
 import { useRouter } from 'next/router'
-import react, { useEffect } from "react";
+import react, { useEffect, useState, useRef } from "react";
+;
 function dashboard() {
-    const { LogOut, currentUser } = useAuth();
+    const { LogOut, getNotes, setNewNotes } = useAuth();
     const nav = useRouter();
-
     useEffect(() => {
-        if (currentUser === null) {
-            nav.push("/login")
-        } else {
-            nav.push("/dashboard")
+        try {
+            getNotes().then((temp) => setUiNotes(temp))
+        } catch {
+            setUiNotes(null);
         }
     }, [])
 
-
+    const [uiNotes, setUiNotes] = useState(null);
+    const testRef = useRef();
     async function Logout() {
         try {
             await LogOut();
@@ -23,8 +24,39 @@ function dashboard() {
             console.log(c)
         }
     }
+    async function getMe() {
+        let t = null;
+        t = await getNotes()
+        setUiNotes(t);
+    }
+    async function addNote(evt) {
+        evt.preventDefault();
+        let target = null;
+        const res = await setNewNotes(testRef.current.value)
+        console.log(res)
+        if (uiNotes === null) {
+            target = [testRef.current.value]
+        }
+        else { target = [...uiNotes, testRef.current.value] }
+        setUiNotes(target)
+    }
     return (
-        <button onClick={Logout}>Logout</button>
+        <>
+            <button class="btn btn-primary" onClick={Logout}>Logout</button>
+            <button class="btn btn-primary" onClick={getMe}>Get New Notes</button>
+            <div className="container">
+                {uiNotes && uiNotes.map((note) => (
+                    <h2>{note}</h2>
+                ))}
+                <form onSubmit={addNote}>
+                    <div class="form-group">
+                        <label for="exampleFormControlTextarea1">Example textarea</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" ref={testRef}></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </>
     )
 }
 
