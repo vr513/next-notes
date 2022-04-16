@@ -7,11 +7,13 @@ function dashboard() {
     const { LogOut, getNotes, setNewNotes } = useAuth();
     const nav = useRouter();
     useEffect(() => {
-        try {
-            getNotes().then((temp) => setUiNotes(temp))
-        } catch {
-            setUiNotes(null);
+
+        const fetchData = async () => {
+            const data = await getNotes();
+            console.log(data)
+            setUiNotes(data)
         }
+        fetchData()
     }, [])
 
     const [uiNotes, setUiNotes] = useState(null);
@@ -28,6 +30,7 @@ function dashboard() {
         let t = null;
         t = await getNotes()
         setUiNotes(t);
+        return t;
     }
     async function addNote(evt) {
         evt.preventDefault();
@@ -45,8 +48,8 @@ function dashboard() {
             <button class="btn btn-primary" onClick={Logout}>Logout</button>
             <button class="btn btn-primary" onClick={getMe}>Get New Notes</button>
             <div className="container">
-                {uiNotes && uiNotes.map((note) => (
-                    <h2>{note}</h2>
+                {uiNotes && uiNotes.map((note, index) => (
+                    <h2 key={index}>{note}</h2>
                 ))}
                 <form onSubmit={addNote}>
                     <div class="form-group">

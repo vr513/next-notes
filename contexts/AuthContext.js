@@ -57,11 +57,14 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
   async function getNotes() {
+    console.log("Inside Get Notes");
     const dbref = ref(db);
     const snapShot = await get(child(dbref, currentUser.uid + "/notes"));
     if (snapShot.exists()) {
       setNotes(snapShot.val());
     }
+    console.log(notes);
+    console.log("Outside Get Notes");
     return notes;
   }
   async function setNewNotes(newNote) {
