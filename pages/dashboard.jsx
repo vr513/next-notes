@@ -9,9 +9,11 @@ function dashboard() {
     useEffect(() => {
 
         const fetchData = async () => {
-            const data = await getNotes();
+            console.log("in use effect")
+            const data = await getMe();
             console.log(data)
             setUiNotes(data)
+            console.log("Use effect end")
         }
         fetchData()
     }, [])
